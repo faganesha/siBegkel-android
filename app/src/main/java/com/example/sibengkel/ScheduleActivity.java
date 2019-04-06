@@ -1,12 +1,14 @@
 package com.example.sibengkel;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.sibengkel.controllers.BookController;
@@ -20,8 +22,8 @@ import java.util.Date;
 public class ScheduleActivity extends AppCompatActivity {
     private LoginActivity.UserLoginTask mAuthTask = null;
 
-    TextView tgl1,email;
-    private int tahun, hari, bulan, namaKend, namaServis ;
+    TextView tgl1,email, jam1;
+    private int tahun, hari, bulan, jam, menit, detik, namaKend, namaServis ;
 
     public final static String TAG_TANGGALBOOK = "tanggalbook";
 
@@ -52,8 +54,34 @@ public class ScheduleActivity extends AppCompatActivity {
                     }
                 },tahun,bulan,hari);
                 DatePicker.show();
+
+
             }
         });
+
+        jam1 = findViewById(R.id.inJam);
+        jam1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar c = Calendar.getInstance();
+                jam = c.get(Calendar.HOUR_OF_DAY);
+                menit = c.get(Calendar.MINUTE);
+
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        jam1.setText( selectedHour + ":" + selectedMinute);
+                    }
+                }, jam, menit, true);//Yes 24 hour time
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+            }
+        });
+        {
+            final Calendar c = Calendar.getInstance();
+
+        }
 
     }
 
@@ -63,11 +91,11 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     public void bookNow(View view){
-      if (mAuthTask != null) {
+        if (mAuthTask != null) {
             return;
         }
 
-        // Store values at the time of the login attempt.
+
         String tgl = tgl1.getText().toString();
 
         boolean cancel = false;
@@ -79,18 +107,17 @@ public class ScheduleActivity extends AppCompatActivity {
             cancel = true;
         }
 
-        if (cancel) {
-            focusView.requestFocus();
+        if (cancel) {focusView.requestFocus();
         } else {
             ContentValues adminData = BookController.getInstance().getDataByTanggal(tgl);
             if (adminData != null) {
                 Toast.makeText(ScheduleActivity.this,
                         "Tanggal tidak kosong", Toast.LENGTH_LONG).show();
             }else {
-            ContentValues content = new ContentValues();
-            content.put("email", getIntent().getExtras().get("email").toString());
-            content.put("tanggal", tgl);
-            content.put("date_added", getCurrentTime());
+                ContentValues content = new ContentValues();
+                content.put("email", getIntent().getExtras().get("email").toString());
+                content.put("tanggal", tgl);
+                content.put("date_added", getCurrentTime());
 
 
                 int id = BookController.getInstance().Book(content);
@@ -104,9 +131,12 @@ public class ScheduleActivity extends AppCompatActivity {
     private String getCurrentTime() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = df.format(c);
 
         return formattedDate;
     }
+
+
 }
+
